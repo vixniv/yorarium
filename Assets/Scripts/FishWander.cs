@@ -2,6 +2,7 @@ using UnityEngine;
 
 // Swims to random points inside the swim area, facing the travel direction.
 // Another component can take over steering with SetTarget (e.g. chasing food).
+// DropIn makes a new fish fall into the tank from above before it starts swimming.
 public class FishWander : MonoBehaviour
 {
     [SerializeField] SwimArea area;
@@ -11,6 +12,11 @@ public class FishWander : MonoBehaviour
     [SerializeField] Vector2 margin = new Vector2(0.1f, 0.07f);
     // True when the sprite art faces left.
     [SerializeField] bool artFacesLeft = true;
+    [Header("Drop in")]
+    [SerializeField] float dropGravity = 2f;
+    [SerializeField] float dropMaxSpeed = 1.2f;
+    // Side-to-side sway while falling, in world units.
+    [SerializeField] float dropWobble = 0.03f;
 
     Vector2 target;
     float pauseTimer;
@@ -20,7 +26,14 @@ public class FishWander : MonoBehaviour
     Vector2 overrideTarget;
     float overrideSpeedMultiplier = 1f;
 
+    bool dropping;
+    float dropLandY;
+    float dropSpeed;
+    float dropTime;
+    float dropX;
+
     public SpriteRenderer Body => body;
+    public bool IsDropping => dropping;
 
     void Start()
     {
@@ -35,6 +48,17 @@ public class FishWander : MonoBehaviour
         overrideSpeedMultiplier = speedMultiplier;
     }
 
+    // Falls straight down from the current position, then settles into normal swimming at landY.
+    public void DropIn(float landY)
+    {
+        dropping = true;
+        dropLandY = landY;
+        dropSpeed = 0f;
+        dropTime = 0f;
+        dropX = transform.position.x;
+        velocity = Vector2.zero;
+    }
+
     public void ClearTarget()
     {
         if (!hasOverride) return;
@@ -45,6 +69,12 @@ public class FishWander : MonoBehaviour
 
     void Update()
     {
+        if (dropping)
+        {
+            Fall();
+            return;
+        }
+
         if (area == null) return;
 
         if (hasOverride)
@@ -78,6 +108,25 @@ public class FishWander : MonoBehaviour
 
         if (body != null && Mathf.Abs(velocity.x) > 0.01f)
             body.flipX = (velocity.x > 0f) == artFacesLeft;
+    }
+
+    void Fall()
+    {
+        dropTime += Time.deltaTime;
+        dropSpeed = Mathf.Min(dropSpeed + dropGravity * Time.deltaTime, dropMaxSpeed);
+        Vector3 p = transform.position;
+        p.y -= dropSpeed * Time.deltaTime;
+        p.x = dropX + Mathf.Sin(dropTime * 9f) * dropWobble;
+        if (p.y <= dropLandY)
+        {
+            p.y = dropLandY;
+            dropping = false;
+            // Carry a little of the fall into the first swim so it doesn't stop dead.
+            velocity = Vector2.down * Mathf.Min(dropSpeed, speed);
+            pauseTimer = 0f;
+            PickTarget();
+        }
+        transform.position = p;
     }
 
     void PickTarget() => target = area != null ? area.RandomPoint(margin) : (Vector2)transform.position;

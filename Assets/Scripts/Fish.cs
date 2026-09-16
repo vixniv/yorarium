@@ -28,8 +28,8 @@ public class Fish : MonoBehaviour
     public static IReadOnlyList<Fish> All => all;
 
     public bool IsAdult => feedCount >= feedsToGrow;
-    // Not resting after a meal and not already chasing food.
-    public bool IsFree => cooldown <= 0f && prey == null;
+    // Not resting after a meal, not already chasing food and not still falling into the tank.
+    public bool IsFree => cooldown <= 0f && prey == null && !wander.IsDropping;
     public float TimeSinceMeal => Time.time - lastMealTime;
 
     void Awake()

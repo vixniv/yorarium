@@ -2,10 +2,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// Shows TankStats on the HUD: food meter fill and coin count.
+// Shows TankStats on the HUD: food meter fill, health (cleanliness) fill and coin count.
 public class HudView : MonoBehaviour
 {
     [SerializeField] Image foodFill;
+    [SerializeField] Image healthFill;
     [SerializeField] TMP_Text coinText;
 
     TankStats stats;
@@ -16,8 +17,10 @@ public class HudView : MonoBehaviour
         if (stats == null) return;
         stats.CoinsChanged += ShowCoins;
         stats.FoodChanged += ShowFood;
+        stats.CleanlinessChanged += ShowHealth;
         ShowCoins(stats.Coins);
         ShowFood(stats.Food);
+        ShowHealth(stats.Cleanliness);
     }
 
     void OnDisable()
@@ -25,6 +28,7 @@ public class HudView : MonoBehaviour
         if (stats == null) return;
         stats.CoinsChanged -= ShowCoins;
         stats.FoodChanged -= ShowFood;
+        stats.CleanlinessChanged -= ShowHealth;
     }
 
     void ShowCoins(int coins)
@@ -35,5 +39,10 @@ public class HudView : MonoBehaviour
     void ShowFood(float food)
     {
         if (foodFill != null) foodFill.fillAmount = food;
+    }
+
+    void ShowHealth(float health)
+    {
+        if (healthFill != null) healthFill.fillAmount = health;
     }
 }
