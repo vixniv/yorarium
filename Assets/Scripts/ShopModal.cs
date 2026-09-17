@@ -44,7 +44,7 @@ public class ShopModal : MonoBehaviour
     void Awake()
     {
         if (group == null) group = GetComponent<CanvasGroup>();
-        if (outsideButton != null) outsideButton.onClick.AddListener(Close);
+        if (outsideButton != null) outsideButton.onClick.AddListener(CloseByTap);
         if (offers != null)
         {
             for (int i = 0; i < offers.Length; i++)
@@ -71,12 +71,21 @@ public class ShopModal : MonoBehaviour
         StartFade(false);
     }
 
+    // Closed by the player, not by a purchase: same click as putting a tool down.
+    void CloseByTap()
+    {
+        if (!IsOpen) return;
+        GameAudio.ToolClicked();
+        Close();
+    }
+
     void Buy(int index)
     {
         if (!IsOpen) return;
         Offer offer = offers[index];
         if (TankStats.Main == null || !TankStats.Main.TrySpendCoins(offer.price))
         {
+            GameAudio.Fail();
             StartCoroutine(NotEnough(offer));
             return;
         }

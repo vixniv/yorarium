@@ -10,6 +10,7 @@ public class GameAudio : MonoBehaviour
     [SerializeField] AudioClip fishEat;
     [SerializeField] AudioClip menuButton;
     [SerializeField] AudioClip toolClicked;
+    [SerializeField] AudioClip fail;
     // One recording holding several brush strokes; each range (start, end seconds) is played on its own.
     [SerializeField] AudioClip cleaning;
     [SerializeField] Vector2[] cleaningStrokes =
@@ -37,6 +38,7 @@ public class GameAudio : MonoBehaviour
     public static void Feeding() => Play(main != null ? main.feeding : null);
     public static void FishEat() => Play(main != null ? main.fishEat : null);
     public static void ToolClicked() => Play(main != null ? main.toolClicked : null);
+    public static void Fail() => Play(main != null ? main.fail : null);
 
     // A random brush stroke, never the same one twice in a row.
     public static void Cleaning()
